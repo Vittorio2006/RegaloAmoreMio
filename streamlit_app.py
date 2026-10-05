@@ -33,7 +33,7 @@ st.markdown("""
         margin-top: 10px;
         padding: 15px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 16px; /* Font ridotto come richiesto */
+        font-size: 16px; /* Font ridotto */
         color: #2b2b2b;
     }
     </style>
@@ -42,7 +42,7 @@ st.markdown("""
 # Titolo formale, grande e in grassetto
 st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amore verso di te</div>", unsafe_allow_html=True)
 
-# Preparazione della figura e del grafico per l'animazione
+# Preparazione della figura e degli assi
 fig, ax = plt.subplots(figsize=(6, 5))
 fig.patch.set_alpha(0.0) 
 ax.patch.set_alpha(0.0)  
@@ -62,10 +62,10 @@ def animate(a):
     linea.set_data(x, y)
     return linea,
 
-# Creazione dell'animazione JavaScript fluida
+# Creazione dell'animazione gestita direttamente via JavaScript nel browser
 anim = FuncAnimation(fig, animate, init_func=init, frames=np.linspace(1, 30, 160), interval=25, blit=True)
 
-# Visualizzazione dell'animazione nel componente web di Streamlit
+# Mostra l'animazione fluida direttamente nel browser tramite componente HTML di Streamlit
 st.components.v1.html(anim.to_jshtml(), height=480)
 plt.close(fig)
 
