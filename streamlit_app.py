@@ -8,7 +8,7 @@ import matplotlib.animation as animation
 # Impostazioni della pagina
 st.set_page_config(page_title="Proposta", layout="centered")
 
-# CSS per un'estetica minimale, seria e formale con font della formula ridotto
+# CSS per un'estetica minimale, seria e formale
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
@@ -32,10 +32,10 @@ st.markdown("""
     
     .formula-paragrafo {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 5px;
         padding: 10px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 16px; /* Font ridotto come richiesto */
+        font-size: 16px; /* Font ridotto */
         color: #2b2b2b;
     }
     </style>
@@ -44,9 +44,9 @@ st.markdown("""
 # Titolo formale, grande e in grassetto
 st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amore verso di te</div>", unsafe_allow_html=True)
 
-# Generazione pulita dell'animazione in memoria convertita in base64 (senza sfarfallii di rerun)
-@st.cache_data
-def genera_animazione_html():
+# Funzione per generare il video HTML5 dell'animazione in memoria
+@st.cache_resource
+def genera_video_cuore():
     fig, ax = plt.subplots(figsize=(6, 5))
     fig.patch.set_alpha(0.0) 
     ax.patch.set_alpha(0.0)  
@@ -69,19 +69,31 @@ def genera_animazione_html():
     frames = np.linspace(1, 30, 100)
     anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=30, blit=True)
     
-    html_content = anim.to_jshtml()
+    # Salviamo in formato mp4 usando il writer 'ffmpeg' se disponibile, altrimenti fallback su html5 video string
+    buf = io.BytesIO()
+    try:
+        anim.save(buf, writer='ffmpeg', fps=30, format='mp4')
+        video_encoded = base64.b64encode(buf.getvalue()).decode('utf-8')
+        video_tag = f'<video width="100%" autoplay loop muted playsinline><source src="data:video/mp4;base64,{video_encoded}" type="video/mp4"></video>'
+    except Exception:
+        # Se ffmpeg non è installato nel cloud, usiamo il codec HTML5 nativo generato da matplotlib
+        video_tag = anim.to_html5_video()
+        
     plt.close(fig)
-    return html_content
+    return video_tag
 
-# Mostriamo l'animazione fluida in un componente HTML dedicato (centrato e pulito)
-anim_html = genera_animazione_html()
-st.components.v1.html(f"""
-<div style="display: flex; justify-content: center; align-items: center; background-color: transparent;">
-    {anim_html}
+# Mostriamo il video animato in modo pulito e centrato
+video_html = genera_video_cuore()
+
+st.markdown(f"""
+<div style="display: flex; justify-content: center; align-items: center;">
+    <div style="width: 450px;">
+        {video_html}
+    </div>
 </div>
-""", height=420)
+""", unsafe_allow_html=True)
 
-# Formula matematica statica e fissa sotto al grafico (senza nessun effetto saltellante)
+# Formula matematica statica e fissa posizionata esattamente sotto l'animazione
 st.markdown(r"""
 <div class="formula-paragrafo">
 
