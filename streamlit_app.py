@@ -1,13 +1,12 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import io
-import matplotlib.animation as animation
+import time
 
 # Impostazioni della pagina
 st.set_page_config(page_title="Proposta", layout="centered")
 
-# CSS per un'estetica minimale, seria e formale
+# CSS per un'estetica minimale, seria e formale (con font della formula ridotto)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
@@ -34,7 +33,7 @@ st.markdown("""
         margin-top: 10px;
         padding: 15px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 16px; /* Font ridotto */
+        font-size: 16px; /* Font ridotto come richiesto */
         color: #2b2b2b;
     }
     </style>
@@ -43,50 +42,39 @@ st.markdown("""
 # Titolo formale, grande e in grassetto
 st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amore verso di te</div>", unsafe_allow_html=True)
 
-# Contenitore per la GIF animata
-gif_placeholder = st.empty()
+# Contenitori per grafico e formula
+plot_placeholder = st.empty()
+text_placeholder = st.empty()
 
-# Funzione per generare la GIF dell'animazione in memoria
-@st.cache_data
-def genera_gif_cuore():
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.patch.set_alpha(0.0) 
-    ax.patch.set_alpha(0.0)  
-    ax.set_xlim(-2.5, 2.5)
-    ax.set_ylim(-1.5, 3.5)
-    ax.axis('off')  
-
-    x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
-    linea, = ax.plot([], [], color='#7a0010', linewidth=1.75)
-
-    def init():
-        linea.set_data([], [])
-        return linea,
-
-    def animate(a):
-        y = np.cbrt(x**2) + 0.9 * np.sqrt(3.3 - x**2) * np.sin(a * np.pi * x)
-        linea.set_data(x, y)
-        return linea,
-
-    frames = np.linspace(1, 30, 100)
-    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=30, blit=True)
-    
-    buf = io.BytesIO()
-    # Rimosso l'argomento 'format' che causava l'errore
-    anim.save(buf, writer='pillow', fps=30)
-    plt.close(fig)
-    buf.seek(0)
-    return buf.read()
-
-# Mostriamo subito la GIF animata pronta e fluida appena si apre l'app
-gif_bytes = genera_gif_cuore()
-gif_placeholder.image(gif_bytes, use_container_width=True)
-
-# Formula matematica sotto al grafico con font ridotto
-st.markdown(r"""
+# Formula matematica sotto al grafico
+with text_placeholder:
+    st.markdown(r"""
 <div class="formula-paragrafo">
 
 $$ \text{Regalo} = dx, \quad \int_{\text{te}}^{\text{me}} \text{Amore} \, dx = +\infty $$
 
 </div>
 """, unsafe_allow_html=True)
+
+# Preparazione del grafico
+fig, ax = plt.subplots(figsize=(6, 5))
+fig.patch.set_alpha(0.0) 
+ax.patch.set_alpha(0.0)  
+ax.set_xlim(-2.5, 2.5)
+ax.set_ylim(-1.5, 3.5)
+ax.axis('off')  
+
+linea, = ax.plot([], [], color='#7a0010', linewidth=1.75)
+x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
+
+# Esecuzione dell'animazione frame per frame nel placeholder
+for a in np.linspace(1, 30, 160):
+    y = np.cbrt(x**2) + 0.9 * np.sqrt(3.3 - x**2) * np.sin(a * np.pi * x)
+    linea.set_data(x, y)
+    
+    with plot_placeholder:
+        st.pyplot(fig)
+        
+    time.sleep(0.02)
+
+plt.close(fig)
