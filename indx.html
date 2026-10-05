@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta</title>
+    <!-- Importazione del font Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap" rel="stylesheet">
+    
+    <!-- Importazione di KaTeX per il rendering perfetto della formula matematica -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" 
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        body {
+            background-color: #fafafa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .titolo-serio {
+            color: #2b2b2b;
+            font-size: 38px;
+            font-weight: 800;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        canvas {
+            background: transparent;
+        }
+
+        .formula-paragrafo {
+            text-align: center;
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 16px; /* Font ridotto come richiesto */
+            color: #2b2b2b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Titolo formale -->
+    <div class="titolo-serio">Un piccolo regalo per il mio infinito amore verso di te</div>
+
+    <!-- Contenitore del grafico in streaming JavaScript -->
+    <div class="canvas-container">
+        <canvas id="cuoreCanvas" width="450" height="400"></canvas>
+    </div>
+
+    <!-- Formula matematica statica sotto -->
+    <div class="formula-paragrafo" id="formula">
+        $$ \text{Regalo} = dx, \quad \int_{\text{te}}^{\text{me}} \text{Amore} \, dx = +\infty $$
+    </div>
+
+    <script>
+        const canvas = document.getElementById('cuoreCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Generazione dei dati matematici per il cuore
+        const numPoints = 1000;
+        const xData = [];
+        
+        // Calcolo dei valori X della funzione
+        const xMinLimit = -Math.sqrt(3.3);
+        const xMaxLimit = Math.sqrt(3.3);
+        for (let i = 0; i < numPoints; i++) {
+            let x = xMinLimit + (i / (numPoints - 1)) * (xMaxLimit - xMinLimit);
+            xData.push(x);
+        }
+
+        // Parametri dell'animazione
+        let a = 1;
+        let incrementing = true;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const xMin = -2.5, xMax = 2.5;
+            const yMin = -1.5, yMax = 3.5;
+
+            function scaleX(val) {
+                return (val - xMin) / (xMax - xMin) * canvas.width;
+            }
+            function scaleY(val) {
+                return canvas.height - (val - yMin) / (yMax - yMin) * canvas.height;
+            }
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#7a0010';
+            ctx.lineWidth = 2.5;
+
+            for (let i = 0; i < xData.length; i++) {
+                let x = xData[i];
+                // Funzione matematica del cuore pulsante
+                let term1 = Math.cbrt(x * x);
+                let term2 = 0.9 * Math.sqrt(3.3 - x * x) * Math.sin(a * Math.PI * x);
+                let y = term1 + term2;
+
+                let px = scaleX(x);
+                let py = scaleY(y);
+
+                if (i === 0) {
+                    ctx.moveTo(px, py);
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+
+            // Aggiornamento dinamico del parametro 'a' per creare l'effetto pulsazione continua
+            a += 0.3;
+            if (a > 30) {
+                a = 1; // Riinizcia il ciclo per farlo andare in loop continuo
+            }
+        }
+
+        // Loop di streaming grafico a circa 30 FPS fluidissimi
+        setInterval(draw, 35);
+    </script>
+</body>
+</html>
