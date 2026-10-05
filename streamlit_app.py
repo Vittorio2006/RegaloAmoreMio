@@ -1,12 +1,13 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import io
+import matplotlib.animation as animation
 
 # Impostazioni della pagina
 st.set_page_config(page_title="Proposta", layout="centered")
 
-# CSS per un'estetica minimale, seria e formale (con font della formula ridotto)
+# CSS per un'estetica minimale, seria e formale
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
@@ -42,32 +43,43 @@ st.markdown("""
 # Titolo formale, grande e in grassetto
 st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amore verso di te</div>", unsafe_allow_html=True)
 
-# Preparazione della figura e degli assi
-fig, ax = plt.subplots(figsize=(6, 5))
-fig.patch.set_alpha(0.0) 
-ax.patch.set_alpha(0.0)  
-ax.set_xlim(-2.5, 2.5)
-ax.set_ylim(-1.5, 3.5)
-ax.axis('off')  
+# Contenitore per la GIF animata
+gif_placeholder = st.empty()
 
-x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
-linea, = ax.plot([], [], color='#7a0010', linewidth=1.75)
+# Funzione per generare la GIF dell'animazione in memoria (senza bisogno di salvarla su disco)
+@st.cache_data
+def genera_gif_cuore():
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.patch.set_alpha(0.0) 
+    ax.patch.set_alpha(0.0)  
+    ax.set_xlim(-2.5, 2.5)
+    ax.set_ylim(-1.5, 3.5)
+    ax.axis('off')  
 
-def init():
-    linea.set_data([], [])
-    return linea,
+    x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
+    linea, = ax.plot([], [], color='#7a0010', linewidth=1.75)
 
-def animate(a):
-    y = np.cbrt(x**2) + 0.9 * np.sqrt(3.3 - x**2) * np.sin(a * np.pi * x)
-    linea.set_data(x, y)
-    return linea,
+    def init():
+        linea.set_data([], [])
+        return linea,
 
-# Creazione dell'animazione gestita direttamente via JavaScript nel browser
-anim = FuncAnimation(fig, animate, init_func=init, frames=np.linspace(1, 30, 160), interval=25, blit=True)
+    def animate(a):
+        y = np.cbrt(x**2) + 0.9 * np.sqrt(3.3 - x**2) * np.sin(a * np.pi * x)
+        linea.set_data(x, y)
+        return linea,
 
-# Mostra l'animazione fluida direttamente nel browser tramite componente HTML di Streamlit
-st.components.v1.html(anim.to_jshtml(), height=480)
-plt.close(fig)
+    frames = np.linspace(1, 30, 100) # Ridotto leggermente a 100 frame per renderla più leggera e fluida
+    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=30, blit=True)
+    
+    buf = io.BytesIO()
+    anim.save(buf, format='gif', writer='pillow', fps=30)
+    plt.close(fig)
+    buf.seek(0)
+    return buf.read()
+
+# Mostriamo subito la GIF animata pronta e fluida appena si apre l'app
+gif_bytes = genera_gif_cuore()
+gif_placeholder.image(gif_bytes, use_container_width=True)
 
 # Formula matematica sotto al grafico con font ridotto
 st.markdown(r"""
