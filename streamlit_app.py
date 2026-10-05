@@ -46,7 +46,7 @@ st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amo
 # Contenitore per la GIF animata
 gif_placeholder = st.empty()
 
-# Funzione per generare la GIF dell'animazione in memoria (senza bisogno di salvarla su disco)
+# Funzione per generare la GIF dell'animazione in memoria
 @st.cache_data
 def genera_gif_cuore():
     fig, ax = plt.subplots(figsize=(6, 5))
@@ -68,11 +68,12 @@ def genera_gif_cuore():
         linea.set_data(x, y)
         return linea,
 
-    frames = np.linspace(1, 30, 100) # Ridotto leggermente a 100 frame per renderla più leggera e fluida
+    frames = np.linspace(1, 30, 100)
     anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=30, blit=True)
     
     buf = io.BytesIO()
-    anim.save(buf, format='gif', writer='pillow', fps=30)
+    # Rimosso l'argomento 'format' che causava l'errore
+    anim.save(buf, writer='pillow', fps=30)
     plt.close(fig)
     buf.seek(0)
     return buf.read()
