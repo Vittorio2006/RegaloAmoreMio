@@ -1,14 +1,12 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import io
-import base64
-import matplotlib.animation as animation
+import time
 
 # Impostazioni della pagina
 st.set_page_config(page_title="Proposta", layout="centered")
 
-# CSS per un'estetica minimale, seria e formale
+# CSS per un'estetica minimale, seria, formale e con font della formula ridotto
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
@@ -32,10 +30,10 @@ st.markdown("""
     
     .formula-paragrafo {
         text-align: center;
-        margin-top: 5px;
-        padding: 10px;
+        margin-top: 10px;
+        padding: 15px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 16px; /* Font ridotto */
+        font-size: 16px; /* Font ridotto come richiesto */
         color: #2b2b2b;
     }
     </style>
@@ -44,9 +42,12 @@ st.markdown("""
 # Titolo formale, grande e in grassetto
 st.markdown("<div class='titolo-serio'>Un piccolo regalo per il mio infinito amore verso di te</div>", unsafe_allow_html=True)
 
-# Funzione per generare il video HTML5 dell'animazione in memoria
-@st.cache_resource
-def genera_video_cuore():
+# Usiamo un frammento dedicato esclusivamente all'animazione per renderla fluidissima
+@st.fragment
+def mostra_animazione():
+    plot_placeholder = st.empty()
+    
+    # Preparazione del grafico
     fig, ax = plt.subplots(figsize=(6, 5))
     fig.patch.set_alpha(0.0) 
     ax.patch.set_alpha(0.0)  
@@ -54,46 +55,25 @@ def genera_video_cuore():
     ax.set_ylim(-1.5, 3.5)
     ax.axis('off')  
 
-    x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
     linea, = ax.plot([], [], color='#7a0010', linewidth=1.75)
+    x = np.linspace(-np.sqrt(3.3), np.sqrt(3.3), 1000)
 
-    def init():
-        linea.set_data([], [])
-        return linea,
-
-    def animate(a):
+    # Esecuzione fluida dei fotogrammi direttamente nel browser
+    for a in np.linspace(1, 30, 90):
         y = np.cbrt(x**2) + 0.9 * np.sqrt(3.3 - x**2) * np.sin(a * np.pi * x)
         linea.set_data(x, y)
-        return linea,
-
-    frames = np.linspace(1, 30, 100)
-    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=30, blit=True)
-    
-    # Salviamo in formato mp4 usando il writer 'ffmpeg' se disponibile, altrimenti fallback su html5 video string
-    buf = io.BytesIO()
-    try:
-        anim.save(buf, writer='ffmpeg', fps=30, format='mp4')
-        video_encoded = base64.b64encode(buf.getvalue()).decode('utf-8')
-        video_tag = f'<video width="100%" autoplay loop muted playsinline><source src="data:video/mp4;base64,{video_encoded}" type="video/mp4"></video>'
-    except Exception:
-        # Se ffmpeg non è installato nel cloud, usiamo il codec HTML5 nativo generato da matplotlib
-        video_tag = anim.to_html5_video()
         
+        with plot_placeholder.container():
+            st.pyplot(fig, clear_figure=False)
+            
+        time.sleep(0.03)
+
     plt.close(fig)
-    return video_tag
 
-# Mostriamo il video animato in modo pulito e centrato
-video_html = genera_video_cuore()
+# Eseguiamo l'animazione nel blocco superiore
+mostra_animazione()
 
-st.markdown(f"""
-<div style="display: flex; justify-content: center; align-items: center;">
-    <div style="width: 450px;">
-        {video_html}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Formula matematica statica e fissa posizionata esattamente sotto l'animazione
+# Formula matematica statica, perfetta e fissa posizionata esattamente sotto al grafico
 st.markdown(r"""
 <div class="formula-paragrafo">
 
